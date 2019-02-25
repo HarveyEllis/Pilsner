@@ -113,12 +113,11 @@ public:
 
 }; /* will need function defns in pilsner */
 
+      
 // =========== function prototypes ============
 int eventdoer( eventq& EQ, vector< person >& cohort, results& res,
                double& now, List& parmzl );
 int updateages( map< string, double >& mymap, double dt );
-
-
 
 
 /* actual event defn declaration */

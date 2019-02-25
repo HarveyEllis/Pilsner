@@ -30,11 +30,14 @@ Because the simulation is specified in C++, the `Rcpp` R package must be install
 install.packages("ggplot2") # needed for the graph
 install.packages("Rcpp") #needed to run the models
 ```
-This may require reading the relevant package installation guidance pages and downloading a compiler. This will be system-dependent. 
-On Mac or Linux, a working compiler probably already exists. 
+This may require reading the relevant package installation guidance pages and downloading a compiler. This will be system-dependent:
+
+- On windows this involves the installation of `Rtools` - if you are using Rstudio as soon as you try to install the Rcpp library it will prompt you to install the necessary Rtools. `Rtools` should be installed in the default location it requests to avoid future errors.
+- On Mac or Linux, a working compiler probably already exists. 
 
 Then either download or clone this repo: the source files are in the `src` directory.
 
+***Note:*** Rcpp does not like when the filepath has spaces, therefore the directory must be in a file path with no spaces.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
 options(width=120)
