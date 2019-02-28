@@ -16,10 +16,11 @@ df2l <- function(x) lapply(split(x,1:nrow(x)),unlist) #fn for converting datafra
 PP0 <- list(unlist(PP[1,])) # take the top row as a parameter input
 PPL <- df2l(PP) # split the whole dataframe into a list with separate parameter for everyone
 
-out <- simulator(AM,CM,DM,100,PPL,recording=FALSE) #returns by side effect
+out <- simulator(AM,CM,DM,100,PPL,recording=TRUE) #returns by side effect
 
 library(ggplot2)  # plotting library 
 P <- ggplot(as.data.frame(cbind(AM,DM)),
             aes(x=age,fill=factor(infected))) +
   geom_histogram() + theme_classic()
 print(P)
+

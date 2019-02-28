@@ -1,15 +1,22 @@
 // (C) P.J. Dodd (2018): Distributed under CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/
 #ifndef EVENTDEFN               /* guard */
 #define EVENTDEFN
+// [[Rcpp::plugins(cpp11)]]
 
 #include <iostream>
+#include <string>
 #include <stdlib.h>
+
 #include <queue>
 #include <fstream>
 #include <ctime>
-// #include <math.h>
+#include <math.h>
+
 #include <vector>
 #include <map>
+#include <functional>
+#include <algorithm>
+
 #include <Rcpp.h>
 
 /* /\* below to get GSL working *\/ */
@@ -19,7 +26,6 @@
 
 using namespace std;
 using namespace Rcpp;
-
 
 /* person class */
 class person{
@@ -35,7 +41,6 @@ class person{
          vector< string > CL, vector< double > CV,
          vector< string > DL, vector< int > DV);
 };
-
 
 // event structure
 struct event{
@@ -54,50 +59,45 @@ struct LTbyTime{
 // for event queue
 typedef priority_queue< event, vector<event>, LTbyTime> eventq;
 
-// generic approach for converting maps to vectors
-template <typename M, typename V>
-  void MapToVec( const  M & m, V & v ) {
-  for( typename M::const_iterator it = m.begin(); it != m.end(); ++it ) {
-    v.push_back( it->second );
-  }
-}
-
+//struct for recording events that happen
+typedef struct {
+  event evnt;
+  map<string, double> Az;
+  map<string, double> Cz;
+  map<string, int> Dz;
+} eventRecord;
 
 // results class here
 class results{
 public:
   bool recording;
-
+  
   // --- data ------
-  vector < double > tz;
-  vector< unsigned int> whoz;
-  vector< string > whatz;
-  vector< vector< double> > Az;
-  vector< vector< int > > Dz;
-  vector< vector< double> > Cz;
+  vector<eventRecord> records;
 
   // ---- functions ----
-
   // function to capture event from event and person
-  int record(event& todo, person& P){
-    // need to convert the map to vector
-    tz.push_back(todo.t);
-    whoz.push_back(todo.who);
-    whatz.push_back(todo.what);
-    vector< double > dvec;
-    vector< int > ivec;
-    MapToVec< map< string, double>, vector< double > > (P.A,dvec); // convert
-    Az.push_back(dvec);
-    MapToVec< map< string, int>, vector< int > > (P.D,ivec); // convert
-    Dz.push_back(ivec);
-    dvec.clear();                                                  // empty out
-    MapToVec< map< string, double>, vector< double > > (P.C,dvec); // convert
-    Cz.push_back(dvec);
-    return 0;
+  void record(event& todo, person& P){
+    records.push_back(eventRecord{.evnt = todo, .Az = P.A, .Cz = P.C, .Dz = P.D});
   }
 
-  DataFrame getresult(){        //
+  // function to reshape 
+  template<typename T, typename F> // v.important - T and F are not the same type! Lambda type != other type
+  void extractFromRecords(std::vector<F>& inputVector,T extractor) {
+    std::transform(records.begin(), records.end(), inputVector.begin(), extractor);
+  }
+  
+  DataFrame getresult(){
     // depends on res.recording
+    vector<double> tz(records.size());
+    extractFromRecords(tz, [](eventRecord const& er) {return er.evnt.t; });
+    
+    vector<string> whatz(records.size());
+    extractFromRecords(whatz, [](eventRecord const& er) {return er.evnt.what; });
+    
+    vector<unsigned int> whoz(records.size());
+    extractFromRecords(whoz, [](eventRecord const& er) {return er.evnt.who; });
+    
     DataFrame ans;
     if(recording){
       /* need to onvert tz to Numeric vector */
